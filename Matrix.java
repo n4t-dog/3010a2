@@ -1,18 +1,48 @@
-import java.util.Arrays;
+import java.util.*;
+import java.io.*;
 
 public class Matrix{
   public static void main(String[] args){
-    double[][] coeff1 = {{1.0,2.0,3.0},{2.0,3.0,1.0},{3.0,1.0,2.0}};
-    double[][] coeff2 = {{1.0,2.0,3.0},{2.0,3.0,1.0},{3.0,1.0,2.0}};
+    if(args.length==0)
+      System.exit(0);
 
-    double[] cons1 = {6.0,6.0,6.0};
-    double[] cons2 = {6.0,6.0,6.0};
+    boolean spp = false;
+    String fileName = "";
+    for(String a: args)
+      if(a.equalsIgnoreCase("--spp"))
+        spp = true;
+      else if(fileName.equals(""))
+        fileName = a;
+    //remove extension
+    if(fileName.contains(".lin"))
+      fileName = fileName.substring(0,fileName.lastIndexOf(".lin"));
 
-    double[] naiveSol = naiveGaussian(coeff1,cons1);
-    double[] SPPSol = SPPGaussian(coeff2,cons2);
+    try{
+      File file = new File(fileName+".lin");
+      Scanner input = new Scanner(file);
 
-    printArray("naive solution", naiveSol);
-    printArray("spp solution", SPPSol);
+      int n = Integer.parseInt(input.nextLine());
+
+      double[][] coeff = new double[n][n];
+      double[] cons = new double[n];
+
+      for(int i=0;i<n;i++){
+        String[] row = input.nextLine().split("\\s+");
+        for(int j=0;j<n;j++)
+          coeff[i][j] = Double.parseDouble(row[j]);
+      }
+      for(int i=0;i<n;i++)
+        cons[i] = Double.parseDouble(input.next());
+
+      double[] sol = (spp) ? SPPGaussian(coeff,cons) : naiveGaussian(coeff,cons);
+      FileWriter output = new FileWriter(fileName+".sol");
+      String solOut = Arrays.toString(sol);
+      solOut = solOut.substring(1,solOut.length()-1);
+      output.write(solOut);
+      output.close();
+    } catch (IOException e) {
+      System.out.println("AAAAAAAAAAAAA");
+    }
   }
 
   public static void fwdElimination(double[][] coeff, double[] cons){
@@ -101,20 +131,5 @@ public class Matrix{
     SPPFwdElimination(coeff,cons,ind);
     SPPBackSubst(coeff,cons,sol,ind);
     return sol;
-  }
-
-
-  public static void printArray(String tag, double[] input){
-    String output = tag + ": {";
-    for(int i=0;i<input.length;i++)
-      output += input[i] + ((i<input.length-1) ? "," : "");
-    output += "}";
-    System.out.println(output);
-  }
-
-  public static void printMatrix(String tag, double[][] input){
-    for(int i=0;i<input.length;i++){
-      printArray(tag+i,input[i]);
-    }
   }
 }
